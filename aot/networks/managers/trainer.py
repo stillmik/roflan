@@ -43,8 +43,12 @@ class Trainer(object):
 
         self.print_log('Build VOS model.')
 
+        self.print_log('pred build_vos_model')
+        self.print_log(f'build_vos_model args {cfg.MODEL_VOS}, {cfg}')
         self.model = build_vos_model(cfg.MODEL_VOS, cfg).cuda(self.gpu)
         self.model_encoder = self.model.encoder
+        self.print_log('pred build_engine')
+        self.print_log(f'build_engine {cfg.MODEL_ENGINE}, {"train"}, {self.model}, {self.gpu}, {cfg.TRAIN_LONG_TERM_MEM_GAP}')
         self.engine = build_engine(
             cfg.MODEL_ENGINE,
             'train',
@@ -158,6 +162,8 @@ class Trainer(object):
                         ema_ckpt_dir = os.path.join(
                             self.ema_dir,
                             'save_step_%s.pth' % (cfg.TRAIN_RESUME_CKPT))
+                        self.print_log('pred load_network')
+                        self.print_log(f'load_network args {self.model}, {ema_ckpt_dir}, {self.gpu}')
                         ema_model, removed_dict = load_network(
                             self.model, ema_ckpt_dir, self.gpu)
                     except Exception as inst:
@@ -169,6 +175,8 @@ class Trainer(object):
                         ema_ckpt_dir = os.path.join(
                             DIR_EMA_CKPT,
                             'save_step_%s.pth' % (cfg.TRAIN_RESUME_CKPT))
+                        self.print_log('pred load_network')
+                        self.print_log(f'load_network args {self.model}, {ema_ckpt_dir}, {self.gpu}')
                         ema_model, removed_dict = load_network(
                             self.model, ema_ckpt_dir, self.gpu)
 
@@ -177,9 +185,11 @@ class Trainer(object):
                             'Remove {} from EMA model.'.format(removed_dict))
                     ema_decay = self.ema.decay
                     del (self.ema)
-
+                    
                     ema_params = get_param_buffer_for_ema(
                         ema_model, update_buffer=(not cfg.MODEL_FREEZE_BN))
+                    self.print_log('pred ExponentialMovingAverage')
+                    self.print_log(f'ExponentialMovingAverage args {ema_params}, {ema_decay}')
                     self.ema = ExponentialMovingAverage(ema_params,
                                                         decay=ema_decay)
                     self.ema.num_updates = cfg.TRAIN_RESUME_CKPT
@@ -190,6 +200,10 @@ class Trainer(object):
             try:
                 resume_ckpt = os.path.join(
                     cfg.DIR_CKPT, 'save_step_%s.pth' % (cfg.TRAIN_RESUME_CKPT))
+                
+                self.print_log('pred load_network_and_optimizer')
+                self.print_log(f'load_network_and_optimizer args {self.model}, {self.optimizer}, {resume_ckpt}, {self.gpu}, {self.scaler}')
+                    
                 self.model, self.optimizer, removed_dict = load_network_and_optimizer(
                     self.model,
                     self.optimizer,
@@ -226,6 +240,9 @@ class Trainer(object):
         elif cfg.PRETRAIN:
             if cfg.PRETRAIN_FULL:
                 try:
+
+                    self.print_log('pred load_network')
+                    self.print_log(f'load_network args {self.model}, {cfg.PRETRAIN_MODEL}, {self.gpu}')
                     self.model, removed_dict = load_network(
                         self.model, cfg.PRETRAIN_MODEL, self.gpu)
                 except Exception as inst:
@@ -237,6 +254,8 @@ class Trainer(object):
                     PRETRAIN_MODEL = os.path.join(
                         DIR_EMA_CKPT,
                         cfg.PRETRAIN_MODEL.split('/')[-1])
+                    self.print_log('pred load_network')
+                    self.print_log(f'load_network args {self.model}, {cfg.PRETRAIN_MODEL}, {self.gpu}')
                     self.model, removed_dict = load_network(
                         self.model, PRETRAIN_MODEL, self.gpu)
 
@@ -246,6 +265,10 @@ class Trainer(object):
                 self.print_log('Load pretrained VOS model from {}.'.format(
                     cfg.PRETRAIN_MODEL))
             else:
+
+                self.print_log('pred load_network')
+                self.print_log(f'load_network args {self.model_encoder}, {cfg.PRETRAIN_MODEL}, {self.gpu}')
+                    
                 model_encoder, removed_dict = load_network(
                     self.model_encoder, cfg.PRETRAIN_MODEL, self.gpu)
                 if len(removed_dict) > 0:
