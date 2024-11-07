@@ -25,13 +25,18 @@ from torchvision import transforms
 class AOTTracker(object):
     def __init__(self, cfg, gpu_id=0):
         self.gpu_id = gpu_id
+        print("pre build_vos_model")
+        print("build_vos_model:::: {cfg.MODEL_VOS}, {cfg}")
         self.model = build_vos_model(cfg.MODEL_VOS, cfg).cuda(gpu_id)
+        print("pre load_network")
+        print("load_network:::: {self.model}, {cfg.TEST_CKPT_PATH}, {gpu_id}")
         self.model, _ = load_network(self.model, cfg.TEST_CKPT_PATH, gpu_id)
         # self.engine = self.build_tracker_engine(cfg.MODEL_ENGINE,
         #                            aot_model=self.model,
         #                            gpu_id=gpu_id,
         #                            short_term_mem_skip=4,
         #                            long_term_mem_gap=cfg.TEST_LONG_TERM_MEM_GAP)
+        print('build_engine')
         self.engine = build_engine(cfg.MODEL_ENGINE,
                                    phase='eval',
                                    aot_model=self.model,

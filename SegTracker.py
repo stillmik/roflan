@@ -16,6 +16,10 @@ class SegTracker():
         """
          Initialize SAM and AOT.
         """
+        print('pred Segmentor')
+        print(f'Segmentor args {sam_args}')
+        print('pred aot_args')
+        print(f'get_aot args {aot_args}')
         self.sam = Segmentor(sam_args)
         self.tracker = get_aot(aot_args)
         self.detector = Detector(self.sam.device)
