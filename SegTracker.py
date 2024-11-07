@@ -10,7 +10,7 @@ from tool.transfer_tools import draw_outline, draw_points
 import cv2
 from seg_track_anything import draw_mask
 
-
+# patau
 class SegTracker():
     def __init__(self,segtracker_args, sam_args, aot_args) -> None:
         """
